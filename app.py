@@ -12,7 +12,7 @@ try:
 except Exception:
     st.caption("It was established by the Swedish inventor Alfred Nobel through his 1895 will.")
 
-st.header('Texto')
+st.header('Text Input')
 
 
 def user_input_features():
@@ -81,6 +81,6 @@ if texto_usuario:
     elif prediction[0] == 5:
         st.write('Economics')
     else:
-        st.write('Sin predicción')
+        st.write('Unknown Category')
 else:
-    st.info("Escribe un texto arriba para obtener una predicción.")
+    st.info("Please enter a motivation text to evaluate.")
