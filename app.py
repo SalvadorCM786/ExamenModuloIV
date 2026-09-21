@@ -67,7 +67,7 @@ if texto_usuario:
     prediction = nb.predict(df_dtm)
 
 
-    st.subheader('Predicción')
+    st.subheader('Prediction Result: ')
     if prediction[0] == 0:
         st.write('Physics')
     elif prediction[0] == 1:
