@@ -1,14 +1,18 @@
-import numpy as np
-import streamlit as st
+import re
+
 import pandas as pd
+import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
 st.write(''' # Predicción de categoría de Premio Nobel ''')
-st.image("nobel.png", caption="Su creador fue el inventor sueco Alfred Nobel mediante su testamento en 1895.")
+
+try:
+    st.image("Nobel.png", caption="Su creador fue el inventor sueco Alfred Nobel mediante su testamento en 1895.")
+except Exception:
+    st.caption("Su creador fue el inventor sueco Alfred Nobel mediante su testamento en 1895.")
 
 st.header('Texto')
-
 
 def user_input_features():
     # Entrada
@@ -17,25 +21,28 @@ def user_input_features():
     features = pd.DataFrame(user_input_data, index=[0])
     return features
 
-
 df = user_input_features()
 
+
 def limpiar_texto(texto):
+    if pd.isna(texto):
+        return ""
     texto = str(texto).lower()
     texto = re.sub(r"[^a-z\s]", " ", texto)   # quita puntuación, números y caracteres especiales
     texto = re.sub(r"\s+", " ", texto).strip()
     return texto
 
+
 nobel = pd.read_csv(
     "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/refs/heads/main/nobelsalvador_limpio.csv"
 )
 nobel = nobel.dropna(subset=["Motivation"]).copy()
+nobel["Motivation"] = nobel["Motivation"].astype(str)
 
-# Antes: nobel.Text / nobel.Label no existían en ese csv -> se construyen aquí.
 nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
 
-# Mismo mapeo manual que ya tenías comentado, ahora aplicado de verdad con .map()
-# (antes el modelo se entrenaba con un csv distinto, así que este mapeo nunca se usaba).
+nobel = nobel[nobel["Text"].str.strip() != ""].copy()
+
 mapa_categorias = {'physics': 0, 'medicine': 1, 'peace': 2, 'literature': 3, 'chemistry': 4, 'economics': 5}
 nobel["Label"] = nobel["Category"].map(mapa_categorias)
 
@@ -54,7 +61,6 @@ if texto_usuario:
     texto_limpio = limpiar_texto(texto_usuario)
     df_dtm = vect.transform([texto_limpio])
     prediction = nb.predict(df_dtm)
-
 
     st.subheader('Predicción')
     if prediction[0] == 0:
