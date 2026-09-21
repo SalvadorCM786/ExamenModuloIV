@@ -40,6 +40,14 @@ nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
 # empty document).
 nobel = nobel[nobel["Text"].str.strip() != ""].copy()
 
+# Clear message instead of a cryptic sklearn error if the source CSV is empty or unreachable.
+if nobel.shape[0] == 0:
+    st.error(
+        "The training data file (nobels_limpio.csv) has no usable rows. "
+        "Check that the CSV in the GitHub repo actually contains data, not just the header."
+    )
+    st.stop()
+
 # Manual category -> number mapping, matched to the labels shown below
 mapa_categorias = {'physics': 0, 'medicine': 1, 'peace': 2, 'literature': 3, 'chemistry': 4, 'economics': 5}
 nobel["Label"] = nobel["Category"].map(mapa_categorias)
