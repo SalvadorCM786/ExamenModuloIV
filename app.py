@@ -27,7 +27,7 @@ def limpiar_texto(texto):
 
 
 nobel = pd.read_csv(
-    "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/refs/heads/main/nobels_limpio.csv"
+    "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/refs/heads/main/nobel_consolidado.csv"
 )
 # .dropna() no siempre atrapa todos los casos "vacíos" (celdas con solo espacios, o el string
 # literal "nan"), así que se convierte todo a texto primero y luego se filtra por contenido real.
