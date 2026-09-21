@@ -29,18 +29,15 @@ def limpiar_texto(texto):
 nobel = pd.read_csv(
     "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/refs/heads/main/nobel_limpio.csv"
 )
-# .dropna() no siempre atrapa todos los casos "vacíos" (celdas con solo espacios, o el string
-# literal "nan"), así que se convierte todo a texto primero y luego se filtra por contenido real.
+
 nobel["Motivation"] = nobel["Motivation"].fillna("").astype(str)
 nobel = nobel[nobel["Motivation"].str.strip().str.lower() != "nan"].copy()
 nobel = nobel[nobel["Motivation"].str.strip() != ""].copy()
 
 nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
-# Drop rows that ended up empty after cleaning (avoids CountVectorizer failing on an
-# empty document).
+
 nobel = nobel[nobel["Text"].str.strip() != ""].copy()
 
-# Clear message instead of a cryptic sklearn error if the source CSV is empty or unreachable.
 if nobel.shape[0] == 0:
     st.error(
         "The training data file (nobels_limpio.csv) has no usable rows. "
