@@ -15,7 +15,7 @@ from sklearn.naive_bayes import MultinomialNB
 
 DATA_URL = (
     "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/"
-    "refs/heads/main/nobelsalvador_limpio.csv"
+    "refs/heads/main/nobels_limpio.csv"
 )
 
 
