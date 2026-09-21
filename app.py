@@ -81,6 +81,6 @@ if texto_usuario:
     elif prediction[0] == 5:
         st.write('Economics')
     else:
-        st.write('Unknown Category')
+        st.write('Unknown category')
 else:
     st.info("Please enter a motivation text to evaluate.")
