@@ -14,20 +14,7 @@ except Exception:
 
 st.header("Text")
 
-if "texto_input" not in st.session_state:
-    st.session_state.texto_input = ""
-
-with st.form("prediction_form"):
-    st.text_input("Enter the motivation text to evaluate", key="texto_input")
-    col1, col2 = st.columns(2)
-    with col1:
-        enviar = st.form_submit_button("Enter", use_container_width=True)
-    with col2:
-        limpiar = st.form_submit_button("Clear", use_container_width=True)
-
-if limpiar:
-    st.session_state.texto_input = ""
-    st.rerun()
+texto_usuario = st.text_input("Enter the motivation text to evaluate")
 
 
 def limpiar_texto(texto):
@@ -42,8 +29,11 @@ def limpiar_texto(texto):
 nobel = pd.read_csv(
     "https://raw.githubusercontent.com/SalvadorCM786/ExamenModuloIV/refs/heads/main/nobels_limpio.csv"
 )
-nobel = nobel.dropna(subset=["Motivation"]).copy()
-nobel["Motivation"] = nobel["Motivation"].astype(str)
+# .dropna() no siempre atrapa todos los casos "vacíos" (celdas con solo espacios, o el string
+# literal "nan"), así que se convierte todo a texto primero y luego se filtra por contenido real.
+nobel["Motivation"] = nobel["Motivation"].fillna("").astype(str)
+nobel = nobel[nobel["Motivation"].str.strip().str.lower() != "nan"].copy()
+nobel = nobel[nobel["Motivation"].str.strip() != ""].copy()
 
 nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
 # Drop rows that ended up empty after cleaning (avoids CountVectorizer failing on an
@@ -66,30 +56,25 @@ X_dtm = vect.fit_transform(X)
 nb = MultinomialNB()
 nb.fit(X_dtm, y)
 
-texto_usuario = st.session_state.texto_input
+if texto_usuario:
+    texto_limpio = limpiar_texto(texto_usuario)
+    df_dtm = vect.transform([texto_limpio])
+    prediction = nb.predict(df_dtm)
 
-if enviar:
-    if texto_usuario.strip():
-        texto_limpio = limpiar_texto(texto_usuario)
-        df_dtm = vect.transform([texto_limpio])
-        prediction = nb.predict(df_dtm)
-
-        st.subheader("Prediction")
-        if prediction[0] == 0:
-            st.success("Physics")
-        elif prediction[0] == 1:
-            st.success("Medicine")
-        elif prediction[0] == 2:
-            st.success("Peace")
-        elif prediction[0] == 3:
-            st.success("Literature")
-        elif prediction[0] == 4:
-            st.success("Chemistry")
-        elif prediction[0] == 5:
-            st.success("Economics")
-        else:
-            st.warning("No prediction")
+    st.subheader("Prediction")
+    if prediction[0] == 0:
+        st.success("Physics")
+    elif prediction[0] == 1:
+        st.success("Medicine")
+    elif prediction[0] == 2:
+        st.success("Peace")
+    elif prediction[0] == 3:
+        st.success("Literature")
+    elif prediction[0] == 4:
+        st.success("Chemistry")
+    elif prediction[0] == 5:
+        st.success("Economics")
     else:
-        st.warning("Please enter some text before clicking Enter.")
+        st.warning("No prediction")
 else:
-    st.info("Enter text above and click 'Enter' to get a prediction.")
+    st.info("Enter text above to get a prediction.")
