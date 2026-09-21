@@ -5,30 +5,36 @@ import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
-st.write(''' # Predicción de categoría de Premio Nobel ''')
+st.write(''' # Nobel Prize Category Prediction ''')
 
 try:
-    st.image("Nobel.png", caption="Su creador fue el inventor sueco Alfred Nobel mediante su testamento en 1895.")
+    st.image("Nobel.png", caption="Created by Swedish inventor Alfred Nobel through his 1895 will.")
 except Exception:
-    st.caption("Su creador fue el inventor sueco Alfred Nobel mediante su testamento en 1895.")
+    st.caption("Created by Swedish inventor Alfred Nobel through his 1895 will.")
 
-st.header('Texto')
+st.header("Text")
 
-def user_input_features():
-    # Entrada
-    texto = st.text_input("Introduce el texto a evaluar")
-    user_input_data = {'Text': texto}
-    features = pd.DataFrame(user_input_data, index=[0])
-    return features
+if "texto_input" not in st.session_state:
+    st.session_state.texto_input = ""
 
-df = user_input_features()
+with st.form("prediction_form"):
+    st.text_input("Enter the motivation text to evaluate", key="texto_input")
+    col1, col2 = st.columns(2)
+    with col1:
+        enviar = st.form_submit_button("Enter", use_container_width=True)
+    with col2:
+        limpiar = st.form_submit_button("Clear", use_container_width=True)
+
+if limpiar:
+    st.session_state.texto_input = ""
+    st.rerun()
 
 
 def limpiar_texto(texto):
     if pd.isna(texto):
         return ""
     texto = str(texto).lower()
-    texto = re.sub(r"[^a-z\s]", " ", texto)   # quita puntuación, números y caracteres especiales
+    texto = re.sub(r"[^a-z\s]", " ", texto)   # removes punctuation, numbers and special characters
     texto = re.sub(r"\s+", " ", texto).strip()
     return texto
 
@@ -40,7 +46,6 @@ nobel = nobel.dropna(subset=["Motivation"]).copy()
 nobel["Motivation"] = nobel["Motivation"].astype(str)
 
 nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
-
 nobel = nobel[nobel["Text"].str.strip() != ""].copy()
 
 mapa_categorias = {'physics': 0, 'medicine': 1, 'peace': 2, 'literature': 3, 'chemistry': 4, 'economics': 5}
@@ -55,27 +60,30 @@ X_dtm = vect.fit_transform(X)
 nb = MultinomialNB()
 nb.fit(X_dtm, y)
 
-texto_usuario = df['Text'][0]
+texto_usuario = st.session_state.texto_input
 
-if texto_usuario:
-    texto_limpio = limpiar_texto(texto_usuario)
-    df_dtm = vect.transform([texto_limpio])
-    prediction = nb.predict(df_dtm)
+if enviar:
+    if texto_usuario.strip():
+        texto_limpio = limpiar_texto(texto_usuario)
+        df_dtm = vect.transform([texto_limpio])
+        prediction = nb.predict(df_dtm)
 
-    st.subheader('Predicción')
-    if prediction[0] == 0:
-        st.write('Physics')
-    elif prediction[0] == 1:
-        st.write('Medicine')
-    elif prediction[0] == 2:
-        st.write('Peace')
-    elif prediction[0] == 3:
-        st.write('Literature')
-    elif prediction[0] == 4:
-        st.write('Chemistry')
-    elif prediction[0] == 5:
-        st.write('Economics')
+        st.subheader("Prediction")
+        if prediction[0] == 0:
+            st.success("Physics")
+        elif prediction[0] == 1:
+            st.success("Medicine")
+        elif prediction[0] == 2:
+            st.success("Peace")
+        elif prediction[0] == 3:
+            st.success("Literature")
+        elif prediction[0] == 4:
+            st.success("Chemistry")
+        elif prediction[0] == 5:
+            st.success("Economics")
+        else:
+            st.warning("No prediction")
     else:
-        st.write('Sin predicción')
+        st.warning("Please enter some text before clicking Enter.")
 else:
-    st.info("Escribe un texto arriba para obtener una predicción.")
+    st.info("Enter text above and click 'Enter' to get a prediction.")
