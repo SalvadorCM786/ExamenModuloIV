@@ -21,7 +21,7 @@ def limpiar_texto(texto):
     if pd.isna(texto):
         return ""
     texto = str(texto).lower()
-    texto = re.sub(r"[^a-z\s]", " ", texto)   # removes punctuation, numbers and special characters
+    texto = re.sub(r"[^a-z\s]", " ", texto)
     texto = re.sub(r"\s+", " ", texto).strip()
     return texto
 
@@ -38,17 +38,9 @@ nobel["Text"] = nobel["Motivation"].apply(limpiar_texto)
 
 nobel = nobel[nobel["Text"].str.strip() != ""].copy()
 
-if nobel.shape[0] == 0:
-    st.error(
-        "The training data file (nobels_limpio.csv) has no usable rows. "
-        "Check that the CSV in the GitHub repo actually contains data, not just the header."
-    )
-    st.stop()
-
-# Manual category -> number mapping, matched to the labels shown below
 mapa_categorias = {'physics': 0, 'medicine': 1, 'peace': 2, 'literature': 3, 'chemistry': 4, 'economics': 5}
 nobel["Label"] = nobel["Category"].map(mapa_categorias)
-# Drop rows whose Category didn't match the expected 6 (Label would be NaN)
+
 nobel = nobel.dropna(subset=["Label"]).copy()
 nobel["Label"] = nobel["Label"].astype(int)
 
